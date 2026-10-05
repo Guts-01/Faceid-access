@@ -1,0 +1,11 @@
+web/node_modules/
+web/.next/
+web/data/
+web/.env.local
+.npm-cache/
+android/.gradle/
+android/.tooling/
+android/.gradle-home/
+android/local.properties
+android/app/build/
+*.apk
