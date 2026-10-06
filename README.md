@@ -33,22 +33,34 @@ Na seção **Aparelhos**, o administrador pode **Revogar** (bloqueio reversível
 
 Clone o projeto e abra um PowerShell na raiz dele. O SQLite é criado automaticamente. Para manter o banco fora da pasta clonada, configure `CATRACA_DB_PATH` com um caminho em **disco local**, fora de OneDrive ou outro diretório sincronizado. Execute `init-admin` somente quando precisar criar uma conta; ele pede e-mail e senha com pelo menos 12 caracteres.
 
+No Windowns:
+
 ```powershell
-cd web
-$env:CATRACA_DB_PATH = Join-Path $env:LOCALAPPDATA 'CatracaLocal\catraca.sqlite'
-npm ci
-npm run init-admin
-npm run dev
+
+cd web #entra na pasta do serviço web
+
+$env:CATRACA_DB_PATH = Join-Path $env:LOCALAPPDATA 'CatracaLocal\catraca.sqlite' #Important!! rode esse comando caso queira salvar o Banco de dados local no disco local
+
+npm run init-admin #Important!! Cria o banco em /web/data/catraca.sqlite e cria a conta de admin (email e senha). minha recomendação: nao use email pessoal e nem senha pessoal, a aplicação aceita qualquer padrao de email, como: admin@dev.com 
+
+
+npm install #instala os componentes next para rodar a aplicação
+
+npm run dev #Inicia a aplicação no endereço: https://120.0.0.1:3000
 ```
 
 Em Linux/macOS:
 
 ```bash
-cd web
-export CATRACA_DB_PATH="$HOME/.local/share/catraca/catraca.sqlite"
-npm ci
-npm run init-admin
-npm run dev
+cd web #entra na pasta do serviço web
+
+export CATRACA_DB_PATH="$HOME/.local/share/catraca/catraca.sqlite"  #Important!! rode esse comando caso queira salvar o Banco de dados local no disco local
+
+npm run init-admin #Important!! Cria o banco em /web/data/catraca.sqlite e cria a conta de admin (email e senha). minha recomendação: nao use email pessoal e nem senha pessoal, a aplicação aceita qualquer padrao de email, como: admin@dev.com 
+
+npm install #instala os componentes next para rodar a aplicação
+
+npm run dev #Inicia a aplicação no endereço: https://120.0.0.1:3000
 ```
 
 Mantenha o terminal aberto e acesse `http://127.0.0.1:3000` **no computador**. Para criar depois um operador com acesso somente à consulta, use `npm run init-admin -- operator`. Para execução compilada, use `npm run build` e `npm run start` no lugar de `npm run dev`. Reutilize o **mesmo** `CATRACA_DB_PATH` sempre que iniciar o painel ou administrar contas; sem essa variável, o banco padrão fica em `web/data/catraca.sqlite`.
@@ -61,13 +73,13 @@ O aplicativo aceita somente **HTTPS** com certificado confiável. Descubra o IPv
 
 ```powershell
 $ip = '192.168.1.10' # substitua pelo IPv4 do computador na rede local
-$tlsDir = Join-Path $env:LOCALAPPDATA 'CatracaTLS'
+$tlsDir = Join-Path $env:LOCALAPPDATA 'FaceIdAccess'
 New-Item -ItemType Directory -Force -Path $tlsDir | Out-Null
 mkcert -install
 $env:CATRACA_TLS_CERT = Join-Path $tlsDir 'server.pem'
 $env:CATRACA_TLS_KEY = Join-Path $tlsDir 'server-key.pem'
 mkcert -cert-file $env:CATRACA_TLS_CERT -key-file $env:CATRACA_TLS_KEY $ip
-Copy-Item (Join-Path (mkcert -CAROOT) 'rootCA.pem') (Join-Path $tlsDir 'catraca-local-ca.crt')
+Copy-Item (Join-Path (mkcert -CAROOT) 'rootCA.pem') (Join-Path $tlsDir 'faceidaccess-local-ca.crt')
 npm run proxy
 ```
 
@@ -75,19 +87,19 @@ Em Linux/macOS, em outro terminal dentro de `web/`:
 
 ```bash
 ip='192.168.1.10' # substitua pelo IPv4 do computador na rede local
-tls_dir="$HOME/.local/share/catraca/tls"
+tls_dir="$HOME/.local/share/faceidaccess/tls"
 mkdir -p "$tls_dir"
 mkcert -install
 export CATRACA_TLS_CERT="$tls_dir/server.pem"
 export CATRACA_TLS_KEY="$tls_dir/server-key.pem"
 mkcert -cert-file "$CATRACA_TLS_CERT" -key-file "$CATRACA_TLS_KEY" "$ip"
-cp "$(mkcert -CAROOT)/rootCA.pem" "$tls_dir/catraca-local-ca.crt"
+cp "$(mkcert -CAROOT)/rootCA.pem" "$tls_dir/faceidaccess-local-ca.crt"
 npm run proxy
 ```
 
 O proxy escuta na porta `3443` e encaminha para o painel na porta `3000`. Se o firewall do Windows solicitar permissão para Node.js, libere a rede **privada** para a porta `3443`.
 
-Copie **somente** `catraca-local-ca.crt` para o celular. Nas configurações do Android, procure **Instalar certificado de CA** e selecione o arquivo; os nomes dos menus variam por fabricante. A [documentação do mkcert para dispositivos móveis](https://github.com/FiloSottile/mkcert#mobile-devices) detalha essa instalação. **Nunca copie** `server-key.pem` nem `rootCA-key.pem` para o celular ou para o repositório. Remova a CA do celular quando terminar os testes, caso não precise mais dela.
+Copie **somente** `faceidaccess-local-ca.crt` para o celular. Nas configurações do Android, procure **Instalar certificado de CA** e selecione o arquivo; os nomes dos menus variam por fabricante. A [documentação do mkcert para dispositivos móveis](https://github.com/FiloSottile/mkcert#mobile-devices) detalha essa instalação. **Nunca copie** `server-key.pem` nem `rootCA-key.pem` para o celular ou para o repositório. Remova a CA do celular quando terminar os testes, caso não precise mais dela.
 
 No navegador do celular, teste `https://SEU-IP:3443` com o IP do computador. Corrija erros de rede ou certificado antes do pareamento. O IP digitado no APK deve corresponder ao IP incluído no certificado. Se o proxy já estiver configurado e funcionando, reutilize-o.
 
@@ -134,24 +146,25 @@ $version = '0.2.1' # substitua pelo versionName de android/app/build.gradle.kts
 $apk = (Resolve-Path '.\app\build\outputs\apk\debug\app-debug.apk').Path
 $dist = Join-Path (Resolve-Path '..').Path 'dist'
 New-Item -ItemType Directory -Force -Path $dist | Out-Null
-$target = Join-Path $dist "catraca-simulada-v$version-teste.apk"
+$target = Join-Path $dist "faceIdAccess-v$version-teste.apk"
 Copy-Item -LiteralPath $apk -Destination $target -Force
 Get-FileHash -Algorithm SHA256 -LiteralPath $target
 ```
 
-Registre o hash mostrado em `dist/SHA256.txt` se for compartilhar o APK. Essa pasta não é atualizada automaticamente pelo Gradle e arquivos `*.apk` são ignorados pelo Git; para disponibilizar o binário a outras pessoas, anexe-o a uma Release. Em Linux/macOS, copie o mesmo `app/build/outputs/apk/debug/app-debug.apk` para `../dist/` e calcule o SHA-256 com `sha256sum` (Linux) ou `shasum -a 256` (macOS).
 
 Para instalar em um **celular físico**:
+
+### Opção 1
 
 1. Conecte o celular ao computador por USB e escolha **Transferência de arquivos** na notificação do Android.
 2. Copie o APK obtido ou compilado para a pasta **Downloads** do celular. Não é necessário Android Studio, ADB nem emulador no celular.
 3. No celular, abra **Arquivos/Meus Arquivos**, toque no APK e escolha **Instalar**. Se solicitado, permita **Instalar apps desconhecidos** para o aplicativo de arquivos usado. Ao abrir o app, conceda acesso à câmera.
 
-O APK v0.2.0 de teste tem assinatura diferente da versão v0.1.0 entregue anteriormente. Nesse caso, desinstale a v0.1.0 antes de instalar a v0.2.0. A desinstalação apaga o pareamento e os rostos guardados **no celular**; cadastros de pessoas e histórico **no servidor** continuam no SQLite. Em versões futuras, para atualizar sem reinstalar, aumente `versionCode` e `versionName` em `android/app/build.gradle.kts` e preserve a mesma chave de assinatura. Uma compilação de depuração feita em outro computador normalmente usa outra chave.
+### Opção 2
 
-A [orientação oficial do Android sobre instalação fora da loja](https://developer.android.com/distribute/marketing-tools/alternative-distribution) explica a permissão por origem. Se o aparelho apresentar um bloqueio por desenvolvedor não verificado, consulte o [procedimento oficial do Android](https://support.google.com/android/answer/17588095).
+1. Suba esse APK no na sua conta do drive pelo computador
+2. No celular,apos acessar a mesma conta no drive, baixe esse APK e abra **Arquivos/Downloads**, toque no APK e escolha **Instalar**. Se solicitado, permita **Instalar apps desconhecidos** para o aplicativo de arquivos usado. Ao abrir o app, conceda acesso à câmera.
 
-Editar este README não exige recompilar o APK. Os textos exibidos no celular ficam principalmente em `android/app/src/main/java/br/local/catraca/MainActivity.kt`; textos do painel web são compilados separadamente com `npm run build` em `web/`. Arquivos `*.apk` são ignorados pelo Git, e `dist/` não é atualizado automaticamente pelo Gradle.
 
 ## 4. Parear e testar a catraca simulada
 

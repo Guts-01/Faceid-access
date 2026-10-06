@@ -15,4 +15,4 @@ const server = createServer({ cert: readFileSync(certificate), key: readFileSync
   upstream.on('error', () => { if (!outgoing.headersSent) outgoing.writeHead(502); outgoing.end('Painel indisponível'); });
   incoming.pipe(upstream);
 });
-server.listen(port, '0.0.0.0', () => console.log(`Proxy HTTPS ouvindo na porta ${port}`));
+server.listen(port, '0.0.0.0', () => console.log(`Proxy HTTPS ouvindo na porta ${port}, Mova o certificado CA da pasta "C: > user > AppData > Local > FaceidAccess"  para o seu Celular e configure conforme instruções do README.md`));
