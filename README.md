@@ -1,6 +1,6 @@
 # FaceidAcess — MVP
 
-Este repositório implementa o fluxo central do [plano](PLANO_SISTEMA.md): um Android usa a câmera frontal para propor uma identidade, o servidor local decide se o acesso é autorizado e o resultado aparece no app e no painel. **Não há comando para catraca física.** O reconhecimento facial e o piscar de olhos ainda não foram calibrados nem avaliados como controle de segurança real.
+Projeto para reconhecimento facial e liberação de acesso: um Android usa a câmera frontal para propor uma identidade, o servidor local decide se o acesso é autorizado e o resultado aparece no app e no painel. **Não há comando para catraca física.** O reconhecimento facial e o piscar de olhos ainda não foram calibrados nem avaliados como controle de segurança real.
 
 ## Requisitos
 
